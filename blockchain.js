@@ -5,12 +5,15 @@ const crypto = require("crypto");
 const express = require("express");
 const bodyParser = require('body-parser');
 const app = express();
+const url = require('url');
+const axios = require('axios');
 
 //ブロックチェーン
 class BlockChain {
 	constructor() {
 		this.chain = new Array();
 		this.currentTransactions = new Array();
+		this.nodes = new Set();
 
 		// ジェネシスブロック
 		this.newBlock(100, "1");
@@ -54,7 +57,7 @@ class BlockChain {
 	}
 
     /**
-     * シンプルなプルーフオブワークのあアルゴリズム
+     * シンプルなプルーフオブワークアルゴリズム
      * hash(pp')の最初の４つが０となるようなP'を探す
      * pは前のプルーフ　p'は新しいプルーフ
      * @param {int} lastProof 前のプルーフ 
@@ -66,12 +69,88 @@ class BlockChain {
 			proof++;
 		}
 
-		return proof
+		return proof;
 	}
 
-	// チェーンの最後のブロックを取得する
-	get lastBlock() {
-		return this.chain[this.chain.length - 1];
+	/**
+     * ノードリストに新しいノードを加える
+     * @param {string} address ノードのアドレス 例: 'http://192.168.0.5:5000'
+     */
+	registerNode(address) {
+		let parsedUrl = url.parse(address);
+		this.nodes.add(parsedUrl.host);
+	}
+    
+    /**
+     * ブロックチェーンが正しいかを確認する
+     * @param {string} chain ブロックチェーン 
+     * @return {boolean} 正しければtrue、正しくなければfalse
+     */
+	validChain(chain) {
+		let lastBlock = chain[0];
+		let currentIndex = 0;
+		while(currentIndex < chain.length) {
+			let block = chain[currentIndex];
+			console.log(`${lastBlock}`);
+			console.log(`${block}`);
+			console.log('\n--------------\n');
+
+			// ブロックのハッシュが正しいかの確認
+			if (block.previousHash != this.hash(lastBlock)) {
+				return false;
+			}
+
+			// プルーフ・オフ・ワークが正しいかの確認
+			if (!BlockChain.validProof(lastBlock.proof, block.proof)) {
+				return false;
+			}
+
+			lastBlock = block;
+			currentIndex++;
+		}
+
+		return true;
+	}
+    
+    /**
+     * コンセンサスアルゴリズム。ネットワーク上の最も長いチェーンで自らのチェーンを置き換えることで
+     * コンフリクトを解決する。
+     * @return 自らのチェーンが置き換わるとtrue、そうでなければfalse
+     */
+	resolveConflicts() {
+		let neighbours = this.nodes;
+		let newChain = null;
+
+		// 自らのチェーンより長いチェーンを探す必要がある
+		let maxLength = this.chain.length;
+
+		// 他のすべてのノードのチェーンを確認
+		for(let node of neighbours)  {
+			axios.get(`http://${node}/chain`).then(({ data }) => {
+		        const response = data;
+
+		        if(response.status === 200)  {
+		        	let length = response.data.length;
+		        	let chain = response.data.chain;
+
+		        	// そのチェーンがより長いか、有効化を確認
+		        	if(length > maxLength && this.validChain()) {
+		        		maxLength = length;
+		        		newChain = chain;
+		        	}
+		        }　else {
+		        	console.log("status:" + response.status);
+		        }
+		    });
+		}
+
+		// もし自らのチェーンより長く、かつ有効なチェーンを見つけた場合それで置き換える
+		if (newChain !== null) {
+			this.chain = newChain;
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 　　　/**
@@ -80,10 +159,10 @@ class BlockChain {
      * @return {string}
      */
 	static hash(block) {
-		let _hash = crypto.createHash('sha256');
+		let sha = crypto.createHash('sha256');
 		block = JSON.stringify(block);
-		_hash.update(block);
-		return _hash.digest('base64');
+		sha.update(block);
+		return sha.digest('base64');
 	}
 
 	/**
@@ -97,7 +176,7 @@ class BlockChain {
 		let hash = crypto.createHash('sha256');
 		hash.update(guess);
 		let guessHash = hash.digest('base64');
-		
+		console.log(guessHash)
 		return guessHash.indexOf('0000') === 0;
 	}
 	
@@ -116,6 +195,11 @@ class BlockChain {
 	        }
 	    }
 	    return chars.join("");
+	}
+
+	// チェーンの最後のブロックを取得する
+	get lastBlock() {
+		return this.chain[this.chain.length - 1];
 	}
 }
 
@@ -194,4 +278,49 @@ app.get("/chain", function(req, res){
     res.json(response);
     return;
 });
+
+// ノードを追加する
+app.post("/nodes/register", function(req, res){
+	let values = req.body;
+    let nodes = values.nodes;
+
+    if(nodes === null || nodes === undefined)  {
+    	res.status(400);
+    	return "error: 有効ではないノードのリストです";
+    }
+
+    for(let node of nodes) {
+    	blockchain.registerNode(node);
+    }
+
+    let response = {
+    	message: '新しいノードが追加されました',
+    	total_nodes: [...blockchain.nodes]
+    };
+
+	res.status(201);
+    return res.json(response);
+});
+
+// コンセンサス
+app.get("/nodes/resolve", function(req, res){
+	let replaced = blockchain.resolveConflicts();
+	res.status(200);
+
+	if (replaced) {
+		let response = {
+			message: 'チェーンが置き換えられました',
+			new_chain: blockchain.chain
+		};
+    	return res.json(response);
+	} else {
+		let response = {
+			message: 'チェーンが確認されました',
+			chain: blockchain.chain
+		};
+    	return res.json(response);			
+	}
+});
+
+
 
