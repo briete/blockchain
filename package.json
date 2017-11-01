@@ -1,0 +1,20 @@
+{
+  "name": "blockchain",
+  "version": "1.0.0",
+  "description": "BlockChain",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Naoya Sato",
+  "license": "ISC",
+  "preferGlobal": true,
+  "bin": {
+    "blockchain": "blockchain.js",
+    "api": "api.js",
+    "test": "test.js"
+  },
+  "dependencies": {
+    "axios": "^0.17.0",
+    "express": "^4.16.2"
+  }
+}
