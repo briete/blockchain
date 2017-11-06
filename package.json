@@ -10,8 +10,7 @@
   "preferGlobal": true,
   "bin": {
     "blockchain": "blockchain.js",
-    "api": "api.js",
-    "test": "test.js"
+    "api": "api.js"
   },
   "dependencies": {
     "axios": "^0.17.0",
