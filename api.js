@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 
 // 新しいトランザクションの作成
 app.post("/transactions/new", function(req, res){
-  let values = req.body;
+	let values = req.body;
   let required = ['sender', 'recipient', 'amount'];
 
   // POSTされたデータに必要なデータがあるか確認
