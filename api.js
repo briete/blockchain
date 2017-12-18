@@ -1,17 +1,16 @@
-// require
 const express = require("express");
 const bodyParser = require('body-parser');
 const app = express();
 const url = require('url');
 const BlockChain = require('./blockchain');
 
-//ブロックチェーンクラスのインスタンスを作成
+// ブロックチェーンクラスのインスタンスを作成
 const blockchain = new BlockChain();
 
-//このノードのユニークなアドレスを作成
+// このノードのユニークなアドレスを作成
 const uuid = BlockChain.generateUuid();
 
-// Node.js Expressフレームワーク
+// サーバーリッスン
 const server = app.listen(5000);
 
 console.log('UUID:' + uuid);
@@ -120,6 +119,6 @@ app.get("/nodes/resolve", function(req, res){
 			message: 'チェーンが確認されました',
 			chain: blockchain.chain
 		};
-		return res.json(response);			
+		return res.json(response);
 	}
 });
