@@ -16,11 +16,11 @@ class BlockChain {
 	}
 
 	/**
-	 * ブロックチェーンに新しいブロックを作る
-	 * @param {int} proof プルーフ・オブ・ワークアルゴリズムから得られるプルーフ
-	 * @param {string} previousHash 前のブロックのハッシュ
-	 * @return {dictionary} 新しいブロック
-	 */
+   * ブロックチェーンに新しいブロックを作る
+   * @param {int} proof プルーフ・オブ・ワークアルゴリズムから得られるプルーフ
+   * @param {string} previousHash 前のブロックのハッシュ
+   * @return {dictionary} 新しいブロック
+   */
 	newBlock(proof, previousHash) {
 		let block = {
 			index: this.chain.length + 1,
@@ -36,12 +36,12 @@ class BlockChain {
 	}
 
 	/**
-	 * 次に採掘されるブロックに加える新しいトランザクションを作る
-	 * @param {string} sender 送信者のアドレス
-	 * @param {string} recipient 受信者のアドレス
-	 * @param {int} amount 量
-	 * @return {string}
-	 */
+   * 次に採掘されるブロックに加える新しいトランザクションを作る
+   * @param {string} sender 送信者のアドレス
+   * @param {string} recipient 受信者のアドレス
+   * @param {int} amount 量
+   * @return {string}
+   */
 	newTransaction(sender, recipient, amount) {
 		this.currentTransactions.push({
 			sender: sender,
@@ -53,12 +53,12 @@ class BlockChain {
 	}
 
 	/**
-	 * シンプルなプルーフオブワークアルゴリズム
-	 * hash(pp')の最初の４つが０となるようなP'を探す
-	 * pは前のプルーフ　p'は新しいプルーフ
-	 * @param {int} lastProof 前のプルーフ
-	 * @return {int}
-	 */
+   * シンプルなプルーフオブワークアルゴリズム
+   * hash(pp')の最初の４つが０となるようなP'を探す
+   * pは前のプルーフ　p'は新しいプルーフ
+   * @param {int} lastProof 前のプルーフ
+   * @return {int}
+   */
 	proofOfWork(lastProof) {
 		let proof = 0;
 		while (BlockChain.validProof(lastProof, proof) === false)　 {
@@ -69,19 +69,19 @@ class BlockChain {
 	}
 
 	/**
-	 * ノードリストに新しいノードを加える
-	 * @param {string} address ノードのアドレス 例: 'http://192.168.0.5:5000'
-	 */
+   * ノードリストに新しいノードを加える
+   * @param {string} address ノードのアドレス 例: 'http://192.168.0.5:5000'
+   */
 	registerNode(address) {
 		let parsedUrl = url.parse(address);
 		this.nodes.add(parsedUrl.host);
 	}
 
 	/**
-	 * ブロックチェーンが正しいかを確認する
-	 * @param {string} chain ブロックチェーン
-	 * @return {boolean} 正しければtrue、正しくなければfalse
-	 */
+   * ブロックチェーンが正しいかを確認する
+   * @param {string} chain ブロックチェーン
+   * @return {boolean} 正しければtrue、正しくなければfalse
+   */
 	validChain(chain) {
 		let lastBlock = chain[0];
 		let currentIndex = 0;
@@ -109,10 +109,10 @@ class BlockChain {
 	}
 
 	/**
-	 * コンセンサスアルゴリズム。ネットワーク上の最も長いチェーンで自らのチェーンを置き換えることで
-	 * コンフリクトを解決する。
-	 * @return 自らのチェーンが置き換わるとtrue、そうでなければfalse
-	 */
+   * コンセンサスアルゴリズム。ネットワーク上の最も長いチェーンで自らのチェーンを置き換えることで
+   * コンフリクトを解決する。
+   * @return 自らのチェーンが置き換わるとtrue、そうでなければfalse
+   */
 	resolveConflicts() {
 		let neighbours = this.nodes;
 		let newChain = null;
@@ -150,10 +150,10 @@ class BlockChain {
 	}
 	
 	/**
-	 * ブロックの　SHA-256　ハッシュを作る
-	 * @param {dictionary} block 送信者のアドレス
-	 * @return {string}
-	 */
+   * ブロックの　SHA-256　ハッシュを作る
+   * @param {dictionary} block 送信者のアドレス
+   * @return {string}
+   */
 	static hash(block) {
 		let sha = crypto.createHash('sha256');
 		block = JSON.stringify(block);
@@ -162,11 +162,11 @@ class BlockChain {
 	}
 
 	/**
-	 * プルーフが正しいかを確認する:hash(lastProof, proof)の最初の４つが０となっているか？
-	 * @param {int} lastProof 前のプルーフ
-	 * @param {int} proof 現在のプルーフ
-	 * @return {bool} 正しければtrue、そうでなければfalse
-	 */
+   * プルーフが正しいかを確認する:hash(lastProof, proof)の最初の４つが０となっているか？
+   * @param {int} lastProof 前のプルーフ
+   * @param {int} proof 現在のプルーフ
+   * @return {bool} 正しければtrue、そうでなければfalse
+   */
 	static validProof(lastProof, proof) {
 		let guess = `${lastProof}${proof}`
 		let hash = crypto.createHash('sha256');
@@ -177,9 +177,9 @@ class BlockChain {
 	}
 
 	/**
-	 * UUIDをジェネレートする
-	 * @return {string} UUID
-	 */
+   * UUIDをジェネレートする
+   * @return {string} UUID
+   */
 	static generateUuid() {
 		// https://github.com/GoogleChrome/chrome-platform-analytics/blob/master/src/internal/identifier.js
 		// const FORMAT: string = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
@@ -198,9 +198,9 @@ class BlockChain {
 	}
 
 	/**
-	 * チェーンの最後のブロックを取得する
-	 * @return {object} 最後のブロック
-	 */
+   * チェーンの最後のブロックを取得する
+   * @return {object} 最後のブロック
+   */
 	get lastBlock() {
 		return this.chain[this.chain.length - 1];
 	}
