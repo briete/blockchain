@@ -148,8 +148,8 @@ class BlockChain {
 			return false;
 		}
 	}
-
-  /**
+	
+	/**
 	 * ブロックの　SHA-256　ハッシュを作る
 	 * @param {dictionary} block 送信者のアドレス
 	 * @return {string}
